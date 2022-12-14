@@ -1,9 +1,9 @@
-1.
-2.
-3.
-4.
-5.
-6.
-7.
-8.
-9.
+1. 可以使用run [arglist] 语法，能够start your program [with arglist]
+2. 可以使用b [file:]function，能够set breakpoint at function [in file]
+3. n：next line, stepping over function calls
+4. s：next line, stepping into function calls
+5. c: continue running your program
+6. p expr: display the value of an expression
+7. watch expr: set a watchpoint for expression expr
+8. show args: display argument list
+9. quit exit GDB; also q or EOF (eg C-d)
