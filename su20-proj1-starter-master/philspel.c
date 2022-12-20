@@ -1,3 +1,10 @@
+//Author: Jrryzh
+
+//Date: 2022-12-20
+
+//Description: Got some code from https://github.com/lovelyfrog/cs61c-1/blob/master/proj1/philspel.c
+// My c knowledge is really poor
+
 /*
  * Include the provided hash table library.
  */
@@ -71,6 +78,12 @@ int main(int argc, char **argv) {
 unsigned int stringHash(void *s) {
   char *string = (char *)s;
   // -- TODO --
+  unsigned int hashcode = 0;
+  while (*string) {
+    hashcode += hashcode * 31 + *string;
+    string++;
+  }
+  return hashcode;
 }
 
 /*
@@ -81,6 +94,11 @@ int stringEquals(void *s1, void *s2) {
   char *string1 = (char *)s1;
   char *string2 = (char *)s2;
   // -- TODO --
+  if(strcmp(string1, string2) == 0) {
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 /*
@@ -101,6 +119,52 @@ int stringEquals(void *s1, void *s2) {
  */
 void readDictionary(char *dictName) {
   // -- TODO --
+  FILE *fp;
+  fp = fopen(dictName, "r");
+  if (fp == NULL) {
+    fprintf(stderr, "File not exisits.");
+    exit(1);
+  } 
+  // 简单实现（没法完成长度大于60的word处理）
+  // while (!feof(fp)) {
+  //   char *word = (char *) malloc(sizeof(char) * 60);
+  //   fscanf(fp, word);
+  //   insertData(dictionary, word, word);
+  // }
+  // 完整实现
+  char c;
+  int i = 0;
+  int total_size = 60;
+  char *word = (char *) malloc(sizeof(char) * total_size);
+  while ((c = fgetc(fp)) != EOF) {
+    // 当前字符不是回车
+    if (c != '\n') {
+      word[i++] = c;
+    } else {
+      // 当前字符是回车
+      word[i] = '\0';
+      if(findData(dictionary, word) == NULL) {
+        insertData(dictionary, word, word);
+      }
+      // 重新初始化参数
+      i = 0;
+      total_size = 60;
+      word = (char *) malloc(sizeof(char) * total_size);
+      // continue
+      continue;
+    }
+
+    // 检查是否Overflow (bigger than current size)
+    if (i == total_size) {
+      // 将total_size变为当前两倍
+      total_size *= 2;
+      word = (char *) realloc(word, total_size);
+    }
+
+  }
+  free(word);
+  fclose(fp);
+  return;
 }
 
 /*
@@ -126,4 +190,85 @@ void readDictionary(char *dictName) {
  */
 void processInput() {
   // -- TODO --
+  // 逐个字符进行处理 
+  char c;
+  int i = 0;
+  int total_size = 60;
+  char * word = (char *) malloc(sizeof(char) * total_size);
+  char * all_but_first_lowercase = (char *) malloc(sizeof(char) * total_size);
+  char * all_lowercase = (char *) malloc(sizeof(char) * total_size);
+
+  while ((c = fgetc(stdin)) != EOF)
+  {
+    // 1. 如果当前字符为char则等待后续char 直到再次读到空格或数字 进行查询
+    if (isalpha(c)) {
+      word[i++] = c;
+      // 如果i == total_size则扩大内存
+      if (i == total_size) {
+        total_size *= 2;
+        word = (char *) realloc(word, sizeof(char) * total_size);
+        all_but_first_lowercase = (char *) realloc(all_but_first_lowercase, sizeof(char) * total_size);
+        all_lowercase = (char *) realloc(all_lowercase, sizeof(char) * total_size);
+      }
+    } else {
+      // 2. 如果当前字符为空格或数字则check 然后直接copy到stdout
+      if (i == 0) {
+        fprintf(stdout, "%c", c);
+        continue;
+      }
+      // 准备三种word
+      word[i] = '\0';
+      for (int j = 0; j < strlen(word); j++) {
+        if (j == 0) {
+          all_but_first_lowercase[j] = word[j];
+          all_lowercase[j] = tolower(word[j]);
+        } else {
+          all_but_first_lowercase[j] = tolower(word[j]);
+          all_lowercase[j] = tolower(word[j]);
+        }
+      }
+      // 分别检查
+      if (findData(dictionary, word) || findData(dictionary, all_but_first_lowercase) || findData(dictionary, all_lowercase)) {
+        fprintf(stdout, "%s", word);
+      } else {
+        fprintf(stdout, "%s [sic]", word);
+      }
+      fprintf(stdout, "%c", c);
+      // 检查后reinitalize
+      i = 0;
+      total_size = 60;
+      word = (char *) malloc(sizeof(char) * total_size);
+      all_but_first_lowercase = (char *) malloc(sizeof(char) * total_size);
+      all_lowercase = (char *) malloc(sizeof(char) * total_size);
+    }
+  }
+
+  // 2. 如果当前字符为空格或数字则check 然后直接copy到stdout
+  if (i == 0) {
+    return;
+  } else {
+    // 准备三种word
+    word[i] = '\0';
+    for (int j = 0; j < strlen(word); j++) {
+      if (j == 0) {
+        all_but_first_lowercase[j] = word[j];
+        all_lowercase[j] = tolower(word[j]);
+      } else {
+        all_but_first_lowercase[j] = tolower(word[j]);
+        all_lowercase[j] = tolower(word[j]);
+      }
+    }
+    // 分别检查
+    if (findData(dictionary, word) || findData(dictionary, all_but_first_lowercase) || findData(dictionary, all_lowercase)) {
+      fprintf(stdout, "%s", word);
+    } else {
+      fprintf(stdout, "%s [sic]", word);
+    }
+  }
+  free(word);
+  free(all_but_first_lowercase);
+  free(all_lowercase);
+      
+  return;
+  
 }
