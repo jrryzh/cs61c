@@ -25,8 +25,8 @@
 matmul: 
 
     # Error checks
-    bge x0 a1 exit2
-    bge x0 a2 exit2
+    bge x0 a1 exit_2
+    bge x0 a2 exit_2
     bge x0 a3 exit3
     bge x0 a4 exit3
     bne a2 a4 exit4
@@ -68,16 +68,17 @@ inner_loop_start:
     mv a2 s2
     li a3 1
     mv a4 s5
-    jal ra dot
+    jal dot
     sw a0 0(s6)
+
     addi s6 s6 4
     addi s9 s9 1
     addi s3 s3 4
     j inner_loop_start
 
 inner_loop_end:
-    beq s8 s1 outer_loop_end
     addi s8 s8 1
+    beq s8 s1 outer_loop_end
     li s9 0
     slli t0 s2 2
     add s0 s0 t0
@@ -103,14 +104,14 @@ outer_loop_end:
     
     ret
 
-exit2:
-    li a0 2
-    ecall
+exit_2:
+    li a1 2
+    jal exit2
 
 exit3:
-    li a0 3
-    ecall
+    li a1 3
+    jal exit2
 
 exit4:
-    li a0 4
-    ecall
+    li a1 4
+    jal exit2

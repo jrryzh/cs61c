@@ -25,21 +25,22 @@ loop_start:
     beq a1 x0 loop_end
     # 验证当前a_i是否为>0
     lw t0 0(a0)
+    bge t0 x0 loop_continue
+    sw x0 0(a0)
+
+loop_continue:
     addi a0 a0 4
     addi a1 a1 -1
-    bge x0 t0 loop_start
-    sw x0 0(a0)
-    j loop_start
-
-exit8:
-    li a0 8
-    ecall
+    jal loop_start
 
 loop_end:
-
 
     # Epilogue
     lw ra 0(sp)
     addi sp sp 4
     
 	ret
+
+exit8:
+    li a1 8
+    jal exit2

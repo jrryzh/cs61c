@@ -17,13 +17,14 @@ main:
     li a2 3
     li a4 3
     li a5 3
-    la a6 d
+    la s0 d
+    mv a6 s0
 
     # Call matrix multiply, m0 * m1
     jal ra matmul
 
     # Print the output (use print_int_array in utils.s)
-    la a0 d
+    mv a0 s0
     li a1 3
     li a2 3
     jal ra print_int_array
