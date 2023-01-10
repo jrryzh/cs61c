@@ -1,0 +1,14 @@
+1.
+初始化条件的语句位置错误，应该放到loop外面
+2. 
+    add t1, s0, x0      # load the address of the array of current node into t1
+应该改为 lw 0（s0）
+3.
+    add t1, t1, t0      # offset the array address by the count
+应该将t1 << 2
+4.
+    la a0, 8(s0)        # load the address of the next node into a0
+应该是lw
+5.
+    lw a1, 0(s1)        # put the address of the function back into a1 to prepare for the recursion
+应该是mv a1 s1
