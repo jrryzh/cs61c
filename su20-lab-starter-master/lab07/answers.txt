@@ -1,51 +1,62 @@
 Exercise 1
 	Scenario 1
-		1. 
-		2.
-		3.
+		1. Because stepsize in bytes is exactly equal to blocksize in bytes.
+		2. Still 0. Doesn‘t change the fact above，
+		3. Change [parameter] to [value]. blocksize 32
 
 	Scenario 2
-		1.
-		2.
-		3.
-		4.
-		5.
+		1. Two
+		2. miss hit hit hit （iterate every 4 access）
+		3. First read miss，do loading，then write hit，then read hit，then write hit
+		4. Close to 1
+		5. SO, instead, we should try to access **__** of the array at a time and apply all of the **_** to that **__** 
+		so we can be completely done with it before moving on, thereby keeping that **_** hot in the cache and not having to circle back to it later on!
+		1st 3rd 4th -> each item	2nd -> mapping functions
 
 	Scenario 3
-		1.
-		2.
-		3.
-		4.
-		5.
+		1. L1:0.5 L2:0 Overall:(16+0) / (32+16) = 1/3
+		2. accesses:32 hits:16
+		3. accesses:16 这里有点疑惑的是，既然是write-through，为什么L2 cache只access16次，难道是L1 cache直接越过L2 cache写入memory吗
+		4. blocksize
+		5. 
 
 Exercise 2
-	ijk:
-	ikj:
-	jik:
-	jki:
-	kij:
-	kji:
 
-	1.
-	2.
-	3.
+	for (int i = 0; i < n; i++)
+		for (int j = 0; j < n; j++)
+			for (int k = 0; k < n; k++)
+				C[i+j*n] += A[i+k*n] * B[k+j*n];
+
+	ijk:    n = 1000, 0.471 / 0.422 / 0.475 Gflop/s
+	ikj:    n = 1000, 0.158 / 0.164 / 0.156 Gflop/s
+	jik:    n = 1000, 0.401 / 0.403 / 0.409 Gflop/s
+	jki:    n = 1000, 0.585 / 0.585 / 0.585 Gflop/s
+	kij:    n = 1000, 0.175 / 0.170 / 0.172 Gflop/s
+	kji:    n = 1000, 0.586 / 0.531 / 0.584 Gflop/s
+	函数的实际计算公式为：C = B x A，即C[j,i] = sigma_k B[j,k] * A[k,i]
+	1. jki 最好的循环顺序为jki，其次为kji，可以发现都是将i循环放在最内部，对most inner loop来说，C、A stride为1,B stride为0
+	此外k作为second inner loop来说，进行中间循环时，C stride为0,无需重新load
+	2. ikj 最差的循环顺序为ikj，其次为kij，可以发现都是将j循环放在最内部，对most inner loop来说，C、B stride为n,A stride为0
+	3. most inner loop导致 C A B 三个矩阵的stride越大，运算越慢
 
 Exercise 3
 	Part 1
-		blocksize = 20, n = 100: 
-		blocksize = 20, n = 1000: 
-		blocksize = 20, n = 2000: 
-		blocksize = 20, n = 5000: 
-		blocksize = 20, n = 10000: 
+		blocksize = 20, n = 100:	naive:0.006		blocking:0.019
+		blocksize = 20, n = 1000:	naive:1.702 	blocking:2.421
+		blocksize = 20, n = 2000: 	naive:47.483 	blocking:39.405
+		blocksize = 20, n = 5000: 	naive:270.873	blocking:261.887
+		blocksize = 20, n = 10000: 	naive:1850.2	blocking:1341.84
 
-		1.
-		2.
+		1. 当array size达到一定大小时，blocking方法会比naive方法更快
+		2. 对于过小的矩阵，直接运算就能达到很好的hit rate，blocking方法由于多了多重循环反而会慢，当array size达到一定级别，
+			blocking方法才能达到最好
 
 	Part 2
-		blocksize = 50, n = 10000:
-		blocksize = 100, n = 10000:
-		blocksize = 500, n = 10000:
-		blocksize = 1000, n = 10000:
-		blocksize = 5000, n = 10000:
+		速度表现不太稳定，每次都不太一样
+		blocksize = 50, n = 10000:	1230-1246
+		blocksize = 100, n = 10000:	1247-1248左右
+		blocksize = 500, n = 10000:	 1240-1264 不稳定
+		blocksize = 1000, n = 10000: 1305-1377 不稳定
+		blocksize = 5000, n = 10000: 1294-1310
 
-		1.
+		1. 当blocksize变得过于大之后，几乎没有加速效果了，因为过大的cache size和直接运算没有本质区别，cache装不下这么大的block data
