@@ -331,18 +331,25 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
             }
         }
     } else {
-        matrix *temp = NULL;
-        allocate_matrix(&temp, mat->rows, mat->cols);
-        identity_matrix(result);
-        for (int k = 1; k <= pow; k++) {
-            mul_matrix(temp, result, mat);
-            for (int i=0; i < mat->rows; i++) {
-                for (int j=0; j < mat->cols; j++) {
-                    set(result, i, j, get(temp, i, j));
-                }
-            }
+        if (pow%2 == 0) {
+            // even
+            matrix *temp = NULL;
+            allocate_matrix(&temp, mat->rows, mat->cols);
+            mul_matrix(temp, mat, mat);
+            pow_matrix(result, temp, pow/2);
+            deallocate_matrix(temp);
+        } else {
+            // odd
+            matrix *temp0 = NULL;
+            allocate_matrix(&temp0, mat->rows, mat->cols);
+            matrix *temp1 = NULL;
+            allocate_matrix(&temp1, mat->rows, mat->cols);
+            mul_matrix(temp0, mat, mat);
+            pow_matrix(temp1, temp0, (pow-1)/2);
+            mul_matrix(result, mat, temp1);
+            deallocate_matrix(temp0);
+            deallocate_matrix(temp1);
         }
-        deallocate_matrix(temp);
     }
     return 0;
 }
