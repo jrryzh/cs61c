@@ -238,7 +238,7 @@ int neg_matrix(matrix *result, matrix *mat) {
  */
 int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     // Task 1.5 TODO
-    int n = mat->rows * mat->cols;
+    int n = mat1->rows * mat1->cols;
     for (int i=0; i<n/4*4; i+=4) {
         _mm256_storeu_pd (result->data + i, _mm256_add_pd(_mm256_loadu_pd(mat1->data + i), _mm256_loadu_pd(mat2->data + i)));
     }
@@ -273,27 +273,28 @@ int sub_matrix(matrix *result, matrix *mat1, matrix *mat2) {
  */
 int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     // Task 1.6 TODO
-    int n = mat->rows * mat->cols;
     // matrix transpose
     matrix* trans2;
     allocate_matrix(&trans2, mat2->cols, mat2->rows);
     for (int i=0; i<mat2->rows; i++) {
         for (int j=0; j<mat2->cols; j++) {
-            set(result, j, i, get(mat2, i, j));
+            set(trans2, j, i, get(mat2, i, j));
         }
     }
     // multiply
     for (int i=0; i<mat1->rows; i++) {
         for (int j=0; j<mat2->cols; j++) {
             double v = 0.0;
+            double v_arr[4];
             __m256d vec = _mm256_set1_pd (0.0);
             for (int k=0; k<mat1->cols/4*4; k+=4) {
                 __m256d t1 = _mm256_loadu_pd(mat1->data + i*trans2->cols + k);
                 __m256d t2 = _mm256_loadu_pd(trans2->data + j*trans2->cols + k);
                 vec = _mm256_fmadd_pd (t1, t2, vec);
             }
+            _mm256_storeu_pd (v_arr, vec);
             for (int k = 0; k < 256; k += 64) {
-                v += (double) *(vec+k);
+                v += *(v_arr+k);
             }
             for (int k=mat1->cols/4*4; k<mat1->cols; k++) {
                 v += get(mat1, i, k) * get(trans2, j, k);
